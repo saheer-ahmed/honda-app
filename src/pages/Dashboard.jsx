@@ -5,6 +5,7 @@ import { useSocket } from '../hooks/useSocket';
 import QuotationBuilder from '../components/QuotationBuilder';
 import Reports from './Reports';
 import Admin from './Admin';
+import LiveTracking from '../components/LiveTracking';
 
 const RED='#E40521',DARK='#0A0A0A',CARD='#111111',BORD='#1F1F1F',TEXT='#F9FAFB',TEXT2='#9CA3AF',TEXT3='#4B5563',GREEN='#22C55E',AMBER='#F59E0B',BLUE='#3B82F6',BG='#0D0D0D';
 
@@ -44,7 +45,7 @@ return(<><div onClick={onClose} style={{position:'fixed',inset:0,background:'rgb
 
 export default function Dashboard(){
 const{user,logout}=useAuth();
-const[jobs,setJobs]=useState([]),[stats,setStats]=useState({}),[drivers,setDrivers]=useState([]),[loading,setLoading]=useState(true),[selectedJob,setSelectedJob]=useState(null),[filter,setFilter]=useState('all'),[search,setSearch]=useState(''),[notifs,setNotifs]=useState([]),[showNotifs,setShowNotifs]=useState(false),[showReports,setShowReports]=useState(false),[showAdmin,setShowAdmin]=useState(false);
+const[jobs,setJobs]=useState([]),[stats,setStats]=useState({}),[drivers,setDrivers]=useState([]),[loading,setLoading]=useState(true),[selectedJob,setSelectedJob]=useState(null),[filter,setFilter]=useState('all'),[search,setSearch]=useState(''),[notifs,setNotifs]=useState([]),[showNotifs,setShowNotifs]=useState(false),[showReports,setShowReports]=useState(false),[showAdmin,setShowAdmin]=useState(false),[showMap,setShowMap]=useState(false);
 const load=useCallback(async()=>{try{const params={};if(filter!=='all')params.status=filter;if(search)params.search=search;const[jobsRes,statsRes,driversRes,notiRes]=await Promise.all([jobsApi.list(params),jobsApi.stats(),driversApi.list(),notiApi.list()]);setJobs(jobsRes.jobs||[]);setStats(statsRes);setDrivers(driversRes);setNotifs(notiRes.notifications||[]);}catch(err){console.error(err);}finally{setLoading(false);}},[ filter,search]);
 useEffect(()=>{load();},[load]);
 useSocket({'job:new':()=>load(),'job:status_update':()=>load(),'quotation:response':()=>load()});
@@ -62,6 +63,8 @@ if(showAdmin) return(
   </div>
 );
 
+if(showMap) return <LiveTracking onClose={()=>setShowMap(false)}/>;
+
 if(showReports) return(
   <div style={{background:BG,minHeight:'100vh',fontFamily:"'Barlow',sans-serif",display:'flex',flexDirection:'column'}}>
     <div style={{background:DARK,borderBottom:`1px solid ${BORD}`,padding:'0 28px',display:'flex',alignItems:'center',justifyContent:'space-between',height:60,flexShrink:0}}>
@@ -78,6 +81,7 @@ return(<div style={{background:BG,minHeight:'100vh',fontFamily:"'Barlow',sans-se
 <div style={{display:'flex',alignItems:'center',gap:12}}>
 <button onClick={()=>setShowReports(true)} style={{background:'transparent',border:`1px solid ${BORD}`,borderRadius:8,padding:'7px 14px',color:TEXT2,cursor:'pointer',fontSize:12,fontWeight:700}}>📊 Reports</button>
 <button onClick={()=>setShowAdmin(true)} style={{background:'transparent',border:`1px solid ${BORD}`,borderRadius:8,padding:'7px 14px',color:TEXT2,cursor:'pointer',fontSize:12,fontWeight:700}}>👥 Users</button>
+<button onClick={()=>setShowMap(true)} style={{background:'transparent',border:`1px solid ${BORD}`,borderRadius:8,padding:'7px 14px',color:TEXT2,cursor:'pointer',fontSize:12,fontWeight:700}}>🗺️ Live Map</button>
 <div style={{position:'relative'}}><button onClick={()=>setShowNotifs(!showNotifs)} style={{background:'transparent',border:`1px solid ${BORD}`,borderRadius:8,padding:'6px 12px',color:TEXT2,cursor:'pointer',fontSize:13,display:'flex',alignItems:'center',gap:6}}>🔔{unreadCount>0&&<span style={{background:RED,color:'#fff',fontSize:9,padding:'1px 5px',borderRadius:10,fontWeight:800}}>{unreadCount}</span>}</button>{showNotifs&&(<div style={{position:'absolute',right:0,top:40,width:300,background:'#111',border:`1px solid ${BORD}`,borderRadius:12,zIndex:200,maxHeight:360,overflowY:'auto'}}><div style={{padding:'12px 16px',borderBottom:`1px solid ${BORD}`,fontSize:13,fontWeight:700,color:TEXT}}>Notifications</div>{notifs.slice(0,8).map(n=>(<div key={n.id} style={{padding:'12px 16px',borderBottom:`1px solid ${BORD}`,background:n.is_read?'transparent':'#0A0D1A'}}><div style={{fontSize:12,fontWeight:700,color:TEXT}}>{n.title}</div><div style={{fontSize:11,color:TEXT2,marginTop:2}}>{n.body}</div></div>))}{notifs.length===0&&<div style={{padding:'20px',textAlign:'center',fontSize:13,color:TEXT3}}>No notifications</div>}</div>)}</div>
 <div style={{fontSize:13,color:TEXT2}}>{user?.name}</div>
 <button onClick={logout} style={{background:'transparent',border:`1px solid ${BORD}`,borderRadius:8,padding:'6px 12px',color:TEXT3,cursor:'pointer',fontSize:12}}>Sign Out</button>
