@@ -4,6 +4,7 @@ import { jobsApi, driversApi, notiApi } from '../lib/api';
 import { useSocket } from '../hooks/useSocket';
 import QuotationBuilder from '../components/QuotationBuilder';
 import Reports from './Reports';
+import Admin from './Admin';
 
 const RED='#E40521',DARK='#0A0A0A',CARD='#111111',BORD='#1F1F1F',TEXT='#F9FAFB',TEXT2='#9CA3AF',TEXT3='#4B5563',GREEN='#22C55E',AMBER='#F59E0B',BLUE='#3B82F6',BG='#0D0D0D';
 
@@ -50,6 +51,16 @@ useSocket({'job:new':()=>load(),'job:status_update':()=>load(),'quotation:respon
 const openJob=async(job)=>{try{const full=await jobsApi.get(job.id);setSelectedJob(full);}catch(err){console.error(err);}};
 const FILTERS=[{id:'all',label:'All',count:jobs.length},{id:'booking_confirmed',label:'New',count:jobs.filter(j=>j.status==='booking_confirmed').length},{id:'waiting_approval',label:'Approval',count:jobs.filter(j=>j.status==='waiting_approval').length},{id:'ready_delivery',label:'Delivery',count:jobs.filter(j=>j.status==='ready_delivery').length},{id:'delivered',label:'Done',count:jobs.filter(j=>j.status==='delivered').length}];
 const unreadCount=notifs.filter(n=>!n.is_read).length;
+
+if(showAdmin) return(
+  <div style={{background:BG,minHeight:'100vh',fontFamily:"'Barlow',sans-serif",display:'flex',flexDirection:'column'}}>
+    <div style={{background:DARK,borderBottom:`1px solid ${BORD}`,padding:'0 28px',display:'flex',alignItems:'center',justifyContent:'space-between',height:60,flexShrink:0}}>
+      <div style={{display:'flex',alignItems:'center',gap:14}}><div style={{background:RED,borderRadius:6,padding:'4px 10px'}}><span style={{fontFamily:"'Barlow Condensed',sans-serif",fontWeight:800,fontSize:16,color:'#fff',letterSpacing:'0.06em'}}>HONDA</span></div><span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,fontWeight:600,color:TEXT3,letterSpacing:'0.08em'}}>SERVICE OPS</span></div>
+      <button onClick={logout} style={{background:'transparent',border:`1px solid ${BORD}`,borderRadius:8,padding:'6px 12px',color:TEXT3,cursor:'pointer',fontSize:12}}>Sign Out</button>
+    </div>
+    <Admin onBack={()=>setShowAdmin(false)}/>
+  </div>
+);
 
 if(showReports) return(
   <div style={{background:BG,minHeight:'100vh',fontFamily:"'Barlow',sans-serif",display:'flex',flexDirection:'column'}}>
